@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Підсумки голосування - Верховна Рада України</title>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body {
             background-color: #3a3a3a;
@@ -247,9 +249,23 @@
     </div>
 
     <script>
+        // Firebase configuration - ЗАМІНІТЬ НА ВАШУ КОНФІГУРАЦІЮ
+        const firebaseConfig = {
+          apiKey: "AIzaSyCod8K_ZuuAH2HVUrIjrHIuA5X_57zw66U",
+          authDomain: "verkhovna-rada-88452.firebaseapp.com",
+          databaseURL: "https://verkhovna-rada-88452-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "verkhovna-rada-88452",
+          storageBucket: "verkhovna-rada-88452.firebasestorage.app",
+          messagingSenderId: "453354340221",
+          appId: "1:453354340221:web:8e3bf7fb9fae0b72a29614",
+          measurementId: "G-N53NFK10MV"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         // Global variables
-        let peer;
-        let connections = {};
         let sessionCode;
         let timerInterval;
         let remainingTime = 0;
@@ -262,12 +278,6 @@
             total: 0
         };
         let isVotingActive = false;
-        let currentVoteData = {
-            voteNumber: 1,
-            voteTitle: "ПІДСУМКИ ГОЛОСУВАННЯ",
-            voteTime: 60,
-            active: false
-        };
 
         // DOM elements
         const currentTimeEl = document.getElementById('current-time');
@@ -295,61 +305,50 @@
             sessionCode = generateSessionCode();
             sessionCodeEl.textContent = sessionCode;
             
-            // Initialize PeerJS
-            initPeer();
+            // Create session in Firebase
+            createSession();
             
             // Update current time
             updateCurrentTime();
             setInterval(updateCurrentTime, 1000);
             
+            // Set up Firebase listeners
+            setupFirebaseListeners();
+            
             // Set up button event listeners
             setupEventListeners();
         });
-
-        function initPeer() {
-            peer = new Peer(`rada-${sessionCode}`, {
-                debug: 2
-            });
-
-            peer.on('open', (id) => {
-                console.log('My peer ID is: ' + id);
-            });
-
-            peer.on('connection', (conn) => {
-                console.log('Connection received from: ' + conn.peer);
-                
-                conn.on('open', () => {
-                    // Store connection
-                    connections[conn.peer] = conn;
-                    
-                    // Send current state
-                    sendStateToConnection(conn);
-                    
-                    // Set up data handler
-                    conn.on('data', (data) => {
-                        handleConnectionData(conn.peer, data);
-                    });
-                    
-                    // Handle connection close
-                    conn.on('close', () => {
-                        console.log('Connection closed: ' + conn.peer);
-                        delete connections[conn.peer];
-                        removeParticipant(conn.peer);
-                    });
-                });
-            });
-
-            peer.on('error', (err) => {
-                console.error('PeerJS error:', err);
-                alert(`Помилка з'єднання: ${err.type}`);
-            });
-        }
 
         function updateCurrentTime() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             currentTimeEl.textContent = `${hours}:${minutes}`;
+        }
+
+        function createSession() {
+            database.ref(`sessions/${sessionCode}`).set({
+                active: false,
+                created: firebase.database.ServerValue.TIMESTAMP,
+                voteNumber: parseInt(inputVoteNumberEl.value),
+                voteTitle: inputVoteTitleEl.value.trim() || 'ПІДСУМКИ ГОЛОСУВАННЯ'
+            });
+        }
+
+        function setupFirebaseListeners() {
+            // Listen for participant connections
+            database.ref(`sessions/${sessionCode}/participants`).on('value', (snapshot) => {
+                participants = snapshot.val() || {};
+                updateParticipantsList();
+                updateVoteCounts();
+            });
+
+            // Listen for votes
+            database.ref(`sessions/${sessionCode}/votes`).on('value', (snapshot) => {
+                if (isVotingActive) {
+                    updateVoteResults(snapshot.val() || {});
+                }
+            });
         }
 
         function setupEventListeners() {
@@ -363,62 +362,6 @@
             resetButtonEl.addEventListener('click', resetVoting);
         }
 
-        function sendStateToConnection(conn) {
-            conn.send({
-                type: 'state',
-                data: {
-                    voteNumber: currentVoteData.voteNumber,
-                    voteTitle: currentVoteData.voteTitle,
-                    active: isVotingActive,
-                    remainingTime: remainingTime,
-                    decision: decisionEl.textContent
-                }
-            });
-        }
-
-        function broadcastToAll(message) {
-            for (const connId in connections) {
-                connections[connId].send(message);
-            }
-        }
-
-        function handleConnectionData(peerId, data) {
-            console.log('Received data from ' + peerId, data);
-            
-            if (data.type === 'join') {
-                // Add participant
-                addParticipant(peerId, data.name);
-            } else if (data.type === 'vote') {
-                // Record vote
-                recordVote(peerId, data.vote);
-            }
-        }
-
-        function addParticipant(id, name) {
-            participants[id] = {
-                name: name,
-                status: 'не голосував'
-            };
-            updateParticipantsList();
-            updateVoteCounts();
-        }
-
-        function removeParticipant(id) {
-            if (participants[id]) {
-                delete participants[id];
-                updateParticipantsList();
-                updateVoteCounts();
-            }
-        }
-
-        function recordVote(id, vote) {
-            if (participants[id] && isVotingActive) {
-                participants[id].status = vote;
-                updateParticipantsList();
-                updateVoteCounts();
-            }
-        }
-
         function updateParticipantsList() {
             if (Object.keys(participants).length === 0) {
                 participantsListEl.innerHTML = 'Немає підключених учасників';
@@ -427,19 +370,9 @@
 
             let html = '';
             for (const [id, participant] of Object.entries(participants)) {
-                const status = getVoteStatusText(participant.status);
-                html += `<div>${participant.name} (${status})</div>`;
+                html += `<div>${participant.name} (${participant.status || 'підключено'})</div>`;
             }
             participantsListEl.innerHTML = html;
-        }
-
-        function getVoteStatusText(voteType) {
-            switch(voteType) {
-                case 'for': return 'ЗА';
-                case 'against': return 'ПРОТИ';
-                case 'abstained': return 'УТРИМАВСЯ';
-                default: return 'не голосував';
-            }
         }
 
         function startVoting() {
@@ -455,14 +388,6 @@
             isVotingActive = true;
             remainingTime = voteTime;
             
-            // Update current vote data
-            currentVoteData = {
-                voteNumber: voteNumber,
-                voteTitle: voteTitle,
-                voteTime: voteTime,
-                active: true
-            };
-            
             // Update UI
             voteNumberEl.textContent = voteNumber;
             decisionEl.textContent = 'ГОЛОСУВАННЯ ТРИВАЄ';
@@ -474,29 +399,29 @@
             // Reset vote counts
             resetVoteCounts();
             
-            // Reset participant statuses
-            for (const id in participants) {
-                participants[id].status = 'не голосував';
-            }
-            updateParticipantsList();
-            
             // Start timer
             startTimer();
             
-            // Broadcast to all participants
-            broadcastToAll({
-                type: 'voting-start',
-                data: {
-                    voteNumber: voteNumber,
-                    voteTitle: voteTitle,
-                    voteTime: voteTime
-                }
+            // Update Firebase
+            database.ref(`sessions/${sessionCode}`).update({
+                active: true,
+                voteNumber: voteNumber,
+                voteTitle: voteTitle,
+                voteTime: voteTime,
+                startTime: firebase.database.ServerValue.TIMESTAMP,
+                votes: null // Clear previous votes
             });
+            
+            // Reset participant statuses
+            for (const id in participants) {
+                database.ref(`sessions/${sessionCode}/participants/${id}`).update({
+                    status: 'не голосував'
+                });
+            }
         }
 
         function endVoting() {
             isVotingActive = false;
-            currentVoteData.active = false;
             
             // Stop timer
             clearInterval(timerInterval);
@@ -511,19 +436,15 @@
             decisionEl.textContent = decision;
             decisionEl.className = decision === 'РІШЕННЯ ПРИЙНЯТО' ? 'decision' : 'decision rejected';
             
-            // Broadcast to all participants
-            broadcastToAll({
-                type: 'voting-end',
-                data: {
-                    decision: decision,
-                    results: voteResults
-                }
+            // Update Firebase
+            database.ref(`sessions/${sessionCode}`).update({
+                active: false,
+                decision: decision
             });
         }
 
         function resetVoting() {
             isVotingActive = false;
-            currentVoteData.active = false;
             
             // Stop timer if running
             clearInterval(timerInterval);
@@ -540,32 +461,15 @@
             // Reset vote counts
             resetVoteCounts();
             
-            // Reset participant statuses
-            for (const id in participants) {
-                participants[id].status = 'не голосував';
-            }
-            updateParticipantsList();
-            
             // Generate new session code
             sessionCode = generateSessionCode();
             sessionCodeEl.textContent = sessionCode;
             
-            // Broadcast to all participants
-            broadcastToAll({
-                type: 'reset'
-            });
+            // Create new session in Firebase
+            createSession();
             
-            // Close all connections
-            for (const connId in connections) {
-                connections[connId].close();
-            }
-            connections = {};
-            
-            // Reinitialize peer
-            if (peer) {
-                peer.destroy();
-            }
-            initPeer();
+            // Set up new Firebase listeners
+            setupFirebaseListeners();
         }
 
         function startTimer() {
@@ -576,12 +480,9 @@
                 const seconds = remainingTime % 60;
                 timerEl.textContent = `Час: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
                 
-                // Broadcast time update
-                broadcastToAll({
-                    type: 'timer-update',
-                    data: {
-                        remainingTime: remainingTime
-                    }
+                // Update remaining time in Firebase
+                database.ref(`sessions/${sessionCode}`).update({
+                    remainingTime: remainingTime
                 });
                 
                 if (remainingTime <= 0) {
@@ -598,31 +499,42 @@
                 notVoted: 0,
                 total: 0
             };
-            updateVoteCounts();
+            updateVoteDisplay();
         }
 
-        function updateVoteCounts() {
+        function updateVoteResults(votes) {
             // Count votes
             voteResults.for = 0;
             voteResults.against = 0;
             voteResults.abstained = 0;
             voteResults.notVoted = 0;
             
-            for (const [id, participant] of Object.entries(participants)) {
-                if (participant.status === 'for') voteResults.for++;
-                else if (participant.status === 'against') voteResults.against++;
-                else if (participant.status === 'abstained') voteResults.abstained++;
-                else voteResults.notVoted++;
+            for (const [id, vote] of Object.entries(votes)) {
+                if (vote === 'for') voteResults.for++;
+                else if (vote === 'against') voteResults.against++;
+                else if (vote === 'abstained') voteResults.abstained++;
             }
             
+            // Count not voted
+            voteResults.notVoted = Object.keys(participants).length - (voteResults.for + voteResults.against + voteResults.abstained);
             voteResults.total = Object.keys(participants).length;
             
             // Update display
+            updateVoteDisplay();
+        }
+
+        function updateVoteDisplay() {
             votesForEl.textContent = voteResults.for;
             votesAgainstEl.textContent = voteResults.against;
             votesAbstainedEl.textContent = voteResults.abstained;
             votesNotVotedEl.textContent = voteResults.notVoted;
             votesTotalEl.textContent = voteResults.total;
+        }
+
+        function updateVoteCounts() {
+            voteResults.total = Object.keys(participants).length;
+            voteResults.notVoted = voteResults.total - (voteResults.for + voteResults.against + voteResults.abstained);
+            updateVoteDisplay();
         }
 
         function generateSessionCode() {
