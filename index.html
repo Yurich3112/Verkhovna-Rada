@@ -445,11 +445,9 @@
 
         function resetVoting() {
             isVotingActive = false;
-            
-            // Stop timer if running
             clearInterval(timerInterval);
             
-            // Reset UI
+            // Reset UI elements
             voteNumberEl.textContent = inputVoteNumberEl.value;
             decisionEl.textContent = 'ОЧІКУВАННЯ ГОЛОСУВАННЯ';
             decisionEl.className = 'decision';
@@ -458,18 +456,25 @@
             startVoteButtonEl.disabled = false;
             endVoteButtonEl.disabled = true;
             
+            // Log the current session code to sessionHistory before deletion
+            database.ref(`sessionHistory/${sessionCode}`).set({
+                code: sessionCode,
+                endedAt: firebase.database.ServerValue.TIMESTAMP
+            }).then(function() {
+                // Remove the current session from Firebase
+                database.ref(`sessions/${sessionCode}`).remove().then(() => {
+                    // After removal, generate a new session code and create a new session
+                    sessionCode = generateSessionCode();
+                    sessionCodeEl.textContent = sessionCode;
+                    createSession();
+                    
+                    // Reinitialize listeners for the new session
+                    setupFirebaseListeners();
+                });
+            });
+            
             // Reset vote counts
             resetVoteCounts();
-            
-            // Generate new session code
-            sessionCode = generateSessionCode();
-            sessionCodeEl.textContent = sessionCode;
-            
-            // Create new session in Firebase
-            createSession();
-            
-            // Set up new Firebase listeners
-            setupFirebaseListeners();
         }
 
         function startTimer() {
