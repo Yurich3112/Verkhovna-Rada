@@ -1,0 +1,364 @@
+<!-- index.html (Main Display Screen) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rada Voting Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .display-frame {
+            background-color: #000;
+            border: 15px solid #8b5a2b;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .time {
+            text-align: right;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .vote-number {
+            color: orange;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .results {
+            font-size: 28px;
+            line-height: 1.8;
+            margin: 30px 0;
+            text-align: left;
+            padding-left: 30%;
+        }
+        .for { color: #4CAF50; }
+        .against { color: #F44336; }
+        .abstain { color: #FFEB3B; }
+        .not-voted { color: #2196F3; }
+        .total { color: white; }
+        .decision {
+            color: #4CAF50;
+            font-size: 32px;
+            margin-top: 30px;
+        }
+        .controls {
+            margin-top: 40px;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        button, input {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        #sessionCode {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            background-color: #444;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #voterList {
+            text-align: left;
+            margin: 20px auto;
+            max-width: 600px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #333;
+            padding: 10px;
+        }
+        .voter-item {
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 3px;
+        }
+        .voter-for { background-color: rgba(76, 175, 80, 0.3); }
+        .voter-against { background-color: rgba(244, 67, 54, 0.3); }
+        .voter-abstain { background-color: rgba(255, 235, 59, 0.3); }
+        .voter-not-voted { background-color: rgba(33, 150, 243, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="display-frame">
+        <div class="time" id="clock">10:35</div>
+        <div class="vote-number">№ <span id="voteNumber">3</span></div>
+        <div class="results">
+            <div>ПІДСУМКИ ГОЛОСУВАННЯ</div>
+            <div>ЗА <span class="for" id="forVotes">0</span></div>
+            <div>ПРОТИ <span class="against" id="againstVotes">0</span></div>
+            <div>УТРИМАЛИСЬ <span class="abstain" id="abstainVotes">0</span></div>
+            <div>НЕ ГОЛОСУВАЛИ <span class="not-voted" id="notVotedCount">0</span></div>
+            <div>ВСЬОГО <span class="total" id="totalVoters">0</span></div>
+        </div>
+        <div class="decision" id="decision"></div>
+    </div>
+
+    <div class="controls">
+        <h2>Voting Controls</h2>
+        <div>
+            <label for="votingTitle">Voting Title:</label>
+            <input type="text" id="votingTitle" placeholder="Enter voting title" value="Sample Vote">
+        </div>
+        <div>
+            <label for="voteNumberInput">Vote Number:</label>
+            <input type="number" id="voteNumberInput" min="1" value="3">
+        </div>
+        <div>
+            <label for="votingTime">Voting Time (seconds):</label>
+            <input type="number" id="votingTime" min="10" value="60">
+        </div>
+        <button id="startVoting">Start New Voting</button>
+        <button id="endVoting">End Voting</button>
+        <div id="sessionCode">Session Code: <span id="codeDisplay">-</span></div>
+        <div id="votingStatus">Not active</div>
+        <div id="timeRemaining"></div>
+        
+        <div>
+            <button id="resetSession">Create New Session</button>
+            <button id="copyLink">Copy Voter Link</button>
+        </div>
+    </div>
+
+    <h3>Connected Voters</h3>
+    <div id="voterList"></div>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDxKbwT-KIxKD9jbKL-67dwGsBQCvgbaQQ",
+            authDomain: "rada-voting-system.firebaseapp.com",
+            databaseURL: "https://rada-voting-system-default-rtdb.firebaseio.com",
+            projectId: "rada-voting-system",
+            storageBucket: "rada-voting-system.appspot.com",
+            messagingSenderId: "1098040621778",
+            appId: "1:1098040621778:web:b9e5c9e7d7f5c9e7d7f5c9"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // Generate a random session code
+        function generateSessionCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}`;
+        }
+
+        // State variables
+        let sessionCode = generateSessionCode();
+        let voters = {};
+        let votes = { for: 0, against: 0, abstain: 0 };
+        let votingActive = false;
+        let votingTimer = null;
+        let remainingTime = 0;
+        let sessionRef = null;
+        
+        // Initialize session
+        function initializeSession() {
+            sessionCode = generateSessionCode();
+            document.getElementById('codeDisplay').textContent = sessionCode;
+            
+            // Create session in Firebase
+            sessionRef = database.ref('sessions/' + sessionCode);
+            sessionRef.set({
+                created: firebase.database.ServerValue.TIMESTAMP,
+                active: false,
+                voteNumber: document.getElementById('voteNumberInput').value,
+                votingTitle: document.getElementById('votingTitle').value,
+                votes: {
+                    for: 0,
+                    against: 0,
+                    abstain: 0
+                },
+                voters: {}
+            });
+            
+            // Listen for voter changes
+            sessionRef.child('voters').on('value', (snapshot) => {
+                voters = snapshot.val() || {};
+                updateDisplay();
+            });
+            
+            // Listen for vote changes
+            sessionRef.child('votes').on('value', (snapshot) => {
+                votes = snapshot.val() || { for: 0, against: 0, abstain: 0 };
+                updateDisplay();
+            });
+            
+            // Listen for session status changes
+            sessionRef.child('active').on('value', (snapshot) => {
+                votingActive = snapshot.val() || false;
+                document.getElementById('votingStatus').textContent = 
+                    votingActive ? 'Voting Active' : 'Voting Not Active';
+            });
+            
+            document.getElementById('votingStatus').textContent = 'Session Created - Ready to Start Voting';
+        }
+        
+        // Update display
+        function updateDisplay() {
+            document.getElementById('forVotes').textContent = votes.for || 0;
+            document.getElementById('againstVotes').textContent = votes.against || 0;
+            document.getElementById('abstainVotes').textContent = votes.abstain || 0;
+            
+            // Count not voted
+            let totalVoters = 0;
+            let notVoted = 0;
+            
+            if (voters) {
+                totalVoters = Object.keys(voters).length;
+                notVoted = Object.values(voters).filter(voter => !voter.vote).length;
+            }
+            
+            document.getElementById('notVotedCount').textContent = notVoted;
+            document.getElementById('totalVoters').textContent = totalVoters;
+            
+            // Update voter list
+            const voterList = document.getElementById('voterList');
+            voterList.innerHTML = '';
+            
+            if (voters) {
+                Object.entries(voters).forEach(([id, voter]) => {
+                    const voterElement = document.createElement('div');
+                    voterElement.textContent = `${voter.name}: ${voter.vote || 'Not voted'}`;
+                    voterElement.className = 'voter-item';
+                    
+                    if (voter.vote === 'for') {
+                        voterElement.classList.add('voter-for');
+                    } else if (voter.vote === 'against') {
+                        voterElement.classList.add('voter-against');
+                    } else if (voter.vote === 'abstain') {
+                        voterElement.classList.add('voter-abstain');
+                    } else {
+                        voterElement.classList.add('voter-not-voted');
+                    }
+                    
+                    voterList.appendChild(voterElement);
+                });
+            }
+        }
+
+        // Start voting
+        document.getElementById('startVoting').addEventListener('click', function() {
+            if (votingActive) return;
+            
+            // Reset votes
+            sessionRef.child('votes').set({
+                for: 0,
+                against: 0,
+                abstain: 0
+            });
+            
+            // Reset voter votes
+            if (voters) {
+                Object.keys(voters).forEach(voterId => {
+                    sessionRef.child('voters').child(voterId).child('vote').remove();
+                });
+            }
+            
+            // Update vote number and title
+            const voteNumber = document.getElementById('voteNumberInput').value;
+            const votingTitle = document.getElementById('votingTitle').value;
+            
+            sessionRef.child('voteNumber').set(voteNumber);
+            sessionRef.child('votingTitle').set(votingTitle);
+            document.getElementById('voteNumber').textContent = voteNumber;
+            
+            // Set voting time
+            remainingTime = parseInt(document.getElementById('votingTime').value);
+            document.getElementById('timeRemaining').textContent = `Time remaining: ${remainingTime} seconds`;
+            
+            // Set session active
+            sessionRef.child('active').set(true);
+            document.getElementById('decision').textContent = '';
+            
+            // Start countdown
+            votingTimer = setInterval(function() {
+                remainingTime--;
+                document.getElementById('timeRemaining').textContent = `Time remaining: ${remainingTime} seconds`;
+                
+                if (remainingTime <= 0) {
+                    endVoting();
+                }
+            }, 1000);
+        });
+
+        // End voting
+        function endVoting() {
+            if (!votingActive) return;
+            
+            clearInterval(votingTimer);
+            sessionRef.child('active').set(false);
+            document.getElementById('timeRemaining').textContent = '';
+            
+            // Show decision
+            if ((votes.for || 0) > (votes.against || 0)) {
+                document.getElementById('decision').textContent = 'РІШЕННЯ ПРИЙНЯТО';
+                sessionRef.child('decision').set('РІШЕННЯ ПРИЙНЯТО');
+            } else {
+                document.getElementById('decision').textContent = 'РІШЕННЯ НЕ ПРИЙНЯТО';
+                sessionRef.child('decision').set('РІШЕННЯ НЕ ПРИЙНЯТО');
+            }
+        }
+
+        document.getElementById('endVoting').addEventListener('click', endVoting);
+        
+        // Reset session
+        document.getElementById('resetSession').addEventListener('click', function() {
+            if (votingActive) {
+                if (!confirm('A voting is currently active. Are you sure you want to create a new session?')) {
+                    return;
+                }
+                clearInterval(votingTimer);
+            }
+            
+            if (sessionRef) {
+                sessionRef.off(); // Remove all listeners
+            }
+            
+            initializeSession();
+        });
+        
+        // Copy voter link
+        document.getElementById('copyLink').addEventListener('click', function() {
+            const baseUrl = window.location.href.replace('index.html', '').replace(/\/$/, '');
+            const voterUrl = `${baseUrl}/voter.html?session=${sessionCode}`;
+            
+            navigator.clipboard.writeText(voterUrl).then(() => {
+                alert('Voter link copied to clipboard!');
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+                alert('Voter URL: ' + voterUrl);
+            });
+        });
+        
+        // Initialize
+        updateClock();
+        setInterval(updateClock, 60000);
+        initializeSession();
+    </script>
+</body>
+</html>
