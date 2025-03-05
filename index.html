@@ -10,7 +10,7 @@
     <style>
         body {
             background-color: #3a3a3a;
-            font-family: Arial, sans-serif;
+            font-family: 'Courier New', monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -23,55 +23,241 @@
         .frame {
             background-color: #1a1a1a;
             border: 15px solid #8b5a2b;
-            padding: 30px;
-            width: 80%;
-            max-width: 600px;
+            padding: 0;
+            width: 800px;
+            height: 450px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            box-sizing: content-box;
+        }
+
+            .frame::before {
+                content: 'РАДА';
+                position: absolute;
+                bottom: 10px;
+                right: 30px;
+                font-family: 'Courier New', monospace;
+                font-size: 18px;
+                color: #888;
+                font-weight: bold;
+                letter-spacing: 2px;
+            }
+
+        .bbc-logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #fff;
+            color: #000;
+            font-weight: bold;
+            padding: 2px 5px;
+            font-size: 14px;
+            border-radius: 2px;
+            z-index: 10;
+        }
+
+        .rada-logo {
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            height: 30px;
+            z-index: 10;
         }
 
         .screen {
             background-color: #000;
             color: #fff;
-            padding: 20px;
+            height: 100%;
+            width: 100%;
             font-family: 'Courier New', monospace;
             position: relative;
+            letter-spacing: 1px;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .time {
             position: absolute;
             top: 10px;
-            right: 10px;
-            font-size: 18px;
+            right: 20px;
+            font-size: 24px;
+            color: #aaccff;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        /* Law project screen */
+        .law-project {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .law-number {
+            color: #32cd32;
+            font-size: 24px;
+            margin-bottom: 40px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .law-title {
+            color: #32cd32;
+            font-size: 24px;
+            line-height: 1.4;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        /* Voting map screen */
+        .voting-container {
+            display: flex;
+            height: 100%;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .ornament-stripe {
+            width: 80px;
+            height: 100%;
+            position: relative;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="450" viewBox="0 0 80 450"><rect width="80" height="450" fill="white"/><rect x="0" y="0" width="80" height="450" fill="rgb(180,0,0)"/><path d="M40,20 L55,35 L40,50 L25,35 Z" fill="white"/><path d="M40,60 L55,75 L40,90 L25,75 Z" fill="white"/><path d="M40,100 L55,115 L40,130 L25,115 Z" fill="white"/><path d="M40,140 L55,155 L40,170 L25,155 Z" fill="white"/><path d="M40,180 L55,195 L40,210 L25,195 Z" fill="white"/><path d="M40,220 L55,235 L40,250 L25,235 Z" fill="white"/><path d="M40,260 L55,275 L40,290 L25,275 Z" fill="white"/><path d="M40,300 L55,315 L40,330 L25,315 Z" fill="white"/><path d="M40,340 L55,355 L40,370 L25,355 Z" fill="white"/><path d="M40,380 L55,395 L40,410 L25,395 Z" fill="white"/><circle cx="40" cy="35" r="8" fill="rgb(180,0,0)"/><circle cx="40" cy="75" r="8" fill="rgb(180,0,0)"/><circle cx="40" cy="115" r="8" fill="rgb(180,0,0)"/><circle cx="40" cy="155" r="8" fill="rgb(180,0,0)"/><circle cx="40" cy="195" r="8" fill="rgb(180,0,0)"/><circle cx="40" cy="235" r="8" fill="rgb(180,0,0)"/><circle cx="40" cy="275" r="8" fill="rgb(180,0,0)"/><circle cx="40" cy="315" r="8" fill="rgb(180,0,0)"/><circle cx="40" cy="355" r="8" fill="rgb(180,0,0)"/><circle cx="40" cy="395" r="8" fill="rgb(180,0,0)"/></svg>');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            overflow: hidden;
+        }
+
+        .ornament-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: black;
+            z-index: 2;
+        }
+
+        .timer-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background-color: #000;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            border-radius: 50%;
+            border: 2px solid white;
+            z-index: 3;
+            font-family: 'Courier New', monospace;
+        }
+
+        .voting-title {
+            color: #fff;
+            font-size: 28px;
+            text-align: center;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            position: absolute;
+            width: 100%;
+            top: 20px;
+        }
+
+        .voting-map {
+            flex: 1;
+            margin: 0;
+            width: 640px;
+            height: 300px;
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            gap: 2px;
+            position: absolute;
+            top: 80px;
+            left: 80px;
+        }
+
+        .voter-seat {
+            width: 100%;
+            aspect-ratio: 1;
+            background-color: #333333;
+        }
+
+        .voter-for {
+            background-color: #32cd32;
+        }
+
+        .voter-against {
+            background-color: #ff3232;
+        }
+
+        .voter-abstained {
+            background-color: #000000;
+        }
+
+        .voter-empty {
+            background-color: transparent;
+        }
+
+        /* Results screen */
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .vote-number {
             color: #ff9900;
-            text-align: right;
-            margin-bottom: 20px;
-            font-size: 18px;
+            position: absolute;
+            top: 100px;
+            right: 100px;
+            font-size: 24px;
+            font-family: 'Courier New', monospace;
         }
 
         .vote-title {
             color: #c2c2c2;
             text-align: center;
-            font-size: 24px;
+            font-size: 28px;
             margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
         }
 
         .vote-results {
             display: grid;
-            grid-template-columns: 3fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-            font-size: 22px;
+            grid-template-columns: auto auto;
+            column-gap: 100px;
+            row-gap: 15px;
+            margin-bottom: 40px;
+            font-size: 28px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            align-items: center;
         }
 
         .vote-label {
-            text-align: left;
+            text-align: right;
+            line-height: 1.2;
         }
 
         .vote-count {
             text-align: right;
+            line-height: 1.2;
         }
 
         .for {
@@ -83,7 +269,7 @@
         }
 
         .abstained {
-            color: #cccccc;
+            color: #ffff32;
         }
 
         .not-voted {
@@ -97,22 +283,23 @@
         .decision {
             color: #32cd32;
             text-align: center;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
             margin-top: 30px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
         }
 
-        .decision.rejected {
-            color: #ff3232;
-        }
+            .decision.rejected {
+                color: #ff3232;
+            }
 
         .controls {
             margin-top: 30px;
             background: #f0f0f0;
             padding: 20px;
             border-radius: 5px;
-            width: 80%;
-            max-width: 600px;
+            width: 800px;
         }
 
         .control-group {
@@ -141,16 +328,17 @@
             cursor: pointer;
             font-size: 16px;
             margin-top: 10px;
+            margin-right: 10px;
         }
 
-        button:hover {
-            background-color: #45a049;
-        }
+            button:hover {
+                background-color: #45a049;
+            }
 
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
+            button:disabled {
+                background-color: #cccccc;
+                cursor: not-allowed;
+            }
 
         .session-info {
             margin-top: 20px;
@@ -187,27 +375,31 @@
 </head>
 <body>
     <div class="frame">
-        <div class="screen">
-            <div class="time" id="current-time">10:35</div>
-            <div class="vote-number">№ <span id="vote-number">3</span></div>
-            <div class="vote-title">ПІДСУМКИ ГОЛОСУВАННЯ</div>
-            <div class="vote-results">
-                <div class="vote-label">ЗА</div>
-                <div class="vote-count for" id="votes-for">0</div>
+        <div class="bbc-logo">BBC</div>
+        <img class="rada-logo" src="data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'><path d='M10,5 L90,5 L90,25 L10,25 Z' fill='none' stroke='%23ffcc00' stroke-width='2'/><text x='50' y='18' fill='%23ffcc00' font-family='Arial' font-size='10' text-anchor='middle'>РАДА</text></svg>" alt="РАДА">
+        <div class="screen" id="display-screen">
+            <div class="time" id="current-time">12:13</div>
+            <div class="results-container">
+                <div class="vote-title">ПІДСУМКИ ГОЛОСУВАННЯ</div>
+                <div class="vote-number">№ <span id="vote-number">20</span></div>
+                <div class="vote-results">
+                    <div class="vote-label">ЗА</div>
+                    <div class="vote-count for" id="votes-for">0</div>
 
-                <div class="vote-label">ПРОТИ</div>
-                <div class="vote-count against" id="votes-against">0</div>
+                    <div class="vote-label">ПРОТИ</div>
+                    <div class="vote-count against" id="votes-against">0</div>
 
-                <div class="vote-label">УТРИМАЛИСЬ</div>
-                <div class="vote-count abstained" id="votes-abstained">0</div>
+                    <div class="vote-label">УТРИМАЛИСЬ</div>
+                    <div class="vote-count abstained" id="votes-abstained">0</div>
 
-                <div class="vote-label">НЕ ГОЛОСУВАЛИ</div>
-                <div class="vote-count not-voted" id="votes-not-voted">0</div>
+                    <div class="vote-label">НЕ ГОЛОСУВАЛИ</div>
+                    <div class="vote-count not-voted" id="votes-not-voted">0</div>
 
-                <div class="vote-label">ВСЬОГО</div>
-                <div class="vote-count total" id="votes-total">0</div>
+                    <div class="vote-label">ВСЬОГО</div>
+                    <div class="vote-count total" id="votes-total">0</div>
+                </div>
+                <div class="decision" id="decision">ОЧІКУВАННЯ ГОЛОСУВАННЯ</div>
             </div>
-            <div class="decision" id="decision">ОЧІКУВАННЯ ГОЛОСУВАННЯ</div>
         </div>
     </div>
 
@@ -220,12 +412,17 @@
 
         <div class="control-group">
             <label for="input-vote-number">Номер голосування:</label>
-            <input type="number" id="input-vote-number" value="1" min="1">
+            <input type="number" id="input-vote-number" value="20" min="1">
         </div>
 
         <div class="control-group">
-            <label for="input-vote-title">Тема голосування:</label>
-            <textarea id="input-vote-title" rows="2" placeholder="Введіть тему голосування">ПІДСУМКИ ГОЛОСУВАННЯ</textarea>
+            <label for="input-law-number">Номер законопроекту:</label>
+            <input type="text" id="input-law-number" value="1014-3">
+        </div>
+
+        <div class="control-group">
+            <label for="input-vote-title">Назва законопроекту:</label>
+            <textarea id="input-vote-title" rows="3" placeholder="Введіть назву законопроекту">Проект Закону про внесення змін до деяких законів України щодо відмови України від здійснення політики позаблоковості</textarea>
         </div>
 
         <div class="control-group">
@@ -249,16 +446,16 @@
     </div>
 
     <script>
-        // Firebase configuration - ЗАМІНІТЬ НА ВАШУ КОНФІГУРАЦІЮ
+        // Firebase configuration
         const firebaseConfig = {
-          apiKey: "AIzaSyCod8K_ZuuAH2HVUrIjrHIuA5X_57zw66U",
-          authDomain: "verkhovna-rada-88452.firebaseapp.com",
-          databaseURL: "https://verkhovna-rada-88452-default-rtdb.europe-west1.firebasedatabase.app",
-          projectId: "verkhovna-rada-88452",
-          storageBucket: "verkhovna-rada-88452.firebasestorage.app",
-          messagingSenderId: "453354340221",
-          appId: "1:453354340221:web:8e3bf7fb9fae0b72a29614",
-          measurementId: "G-N53NFK10MV"
+            apiKey: "AIzaSyCod8K_ZuuAH2HVUrIjrHIuA5X_57zw66U",
+            authDomain: "verkhovna-rada-88452.firebaseapp.com",
+            databaseURL: "https://verkhovna-rada-88452-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "verkhovna-rada-88452",
+            storageBucket: "verkhovna-rada-88452.firebasestorage.app",
+            messagingSenderId: "453354340221",
+            appId: "1:453354340221:web:8e3bf7fb9fae0b72a29614",
+            measurementId: "G-N53NFK10MV"
         };
 
         // Initialize Firebase
@@ -278,18 +475,17 @@
             total: 0
         };
         let isVotingActive = false;
+        let currentScreen = 'results'; // 'law', 'voting', 'results'
+        let seatMap = [];
+        let votingStartTime = 0;
 
         // DOM elements
+        const screenEl = document.getElementById('display-screen');
         const currentTimeEl = document.getElementById('current-time');
         const voteNumberEl = document.getElementById('vote-number');
-        const votesForEl = document.getElementById('votes-for');
-        const votesAgainstEl = document.getElementById('votes-against');
-        const votesAbstainedEl = document.getElementById('votes-abstained');
-        const votesNotVotedEl = document.getElementById('votes-not-voted');
-        const votesTotalEl = document.getElementById('votes-total');
-        const decisionEl = document.getElementById('decision');
         const sessionCodeEl = document.getElementById('session-code');
         const inputVoteNumberEl = document.getElementById('input-vote-number');
+        const inputLawNumberEl = document.getElementById('input-law-number');
         const inputVoteTitleEl = document.getElementById('input-vote-title');
         const inputVoteTimeEl = document.getElementById('input-vote-time');
         const timerEl = document.getElementById('timer');
@@ -304,17 +500,17 @@
             // Generate session code
             sessionCode = generateSessionCode();
             sessionCodeEl.textContent = sessionCode;
-            
+
             // Create session in Firebase
             createSession();
-            
+
             // Update current time
             updateCurrentTime();
             setInterval(updateCurrentTime, 1000);
-            
+
             // Set up Firebase listeners
             setupFirebaseListeners();
-            
+
             // Set up button event listeners
             setupEventListeners();
         });
@@ -331,7 +527,8 @@
                 active: false,
                 created: firebase.database.ServerValue.TIMESTAMP,
                 voteNumber: parseInt(inputVoteNumberEl.value),
-                voteTitle: inputVoteTitleEl.value.trim() || 'ПІДСУМКИ ГОЛОСУВАННЯ'
+                lawNumber: inputLawNumberEl.value,
+                voteTitle: inputVoteTitleEl.value.trim()
             });
         }
 
@@ -347,6 +544,9 @@
             database.ref(`sessions/${sessionCode}/votes`).on('value', (snapshot) => {
                 if (isVotingActive) {
                     updateVoteResults(snapshot.val() || {});
+                    if (currentScreen === 'voting') {
+                        updateVotingMap();
+                    }
                 }
             });
         }
@@ -354,10 +554,10 @@
         function setupEventListeners() {
             // Start vote button
             startVoteButtonEl.addEventListener('click', startVoting);
-            
+
             // End vote button
             endVoteButtonEl.addEventListener('click', endVoting);
-            
+
             // Reset button
             resetButtonEl.addEventListener('click', resetVoting);
         }
@@ -375,11 +575,186 @@
             participantsListEl.innerHTML = html;
         }
 
+        function showLawProjectScreen() {
+            currentScreen = 'law';
+            const voteNumber = inputVoteNumberEl.value;
+            const lawNumber = inputLawNumberEl.value;
+            const lawTitle = inputVoteTitleEl.value;
+
+            screenEl.innerHTML = `
+            <div class="time" id="current-time">${currentTimeEl.textContent}</div>
+            <div class="law-project">
+                <div class="law-number">Законопроект - ${lawNumber}</div>
+                <div class="law-title">${lawTitle}</div>
+            </div>
+        `;
+
+            // After 5 seconds, switch to voting map
+            setTimeout(() => {
+                showVotingMapScreen();
+                // Start timer when voting map appears
+                startTimer();
+            }, 5000);
+        }
+
+        function showVotingMapScreen() {
+            currentScreen = 'voting';
+
+            // Create the base voting screen
+            screenEl.innerHTML = `
+            <div class="time" id="current-time">${currentTimeEl.textContent}</div>
+            <div class="voting-title">ПОІМЕННЕ ГОЛОСУВАННЯ</div>
+            <div class="voting-container">
+                <div class="ornament-stripe" id="left-stripe">
+                    <div class="ornament-gradient" id="left-gradient" style="height: 0%"></div>
+                    <div class="timer-container" id="left-timer">${remainingTime}</div>
+                </div>
+                <div class="voting-map" id="voting-map"></div>
+                <div class="ornament-stripe" id="right-stripe" style="right: 0">
+                    <div class="ornament-gradient" id="right-gradient" style="height: 0%"></div>
+                    <div class="timer-container" id="right-timer">${remainingTime}</div>
+                </div>
+            </div>
+        `;
+
+            // Record the voting start time
+            votingStartTime = Date.now();
+
+            // Initialize the voting map
+            initializeVotingMap();
+            updateVotingMap();
+        }
+
+        function showResultsScreen() {
+            currentScreen = 'results';
+
+            screenEl.innerHTML = `
+            <div class="time" id="current-time">${currentTimeEl.textContent}</div>
+            <div class="results-container">
+                <div class="vote-title">ПІДСУМКИ ГОЛОСУВАННЯ</div>
+                <div class="vote-number">№ <span id="vote-number">${inputVoteNumberEl.value}</span></div>
+                <div class="vote-results">
+                    <div class="vote-label">ЗА</div>
+                    <div class="vote-count for" id="votes-for">${voteResults.for}</div>
+
+                    <div class="vote-label">ПРОТИ</div>
+                    <div class="vote-count against" id="votes-against">${voteResults.against}</div>
+
+                    <div class="vote-label">УТРИМАЛИСЬ</div>
+                    <div class="vote-count abstained" id="votes-abstained">${voteResults.abstained}</div>
+
+                    <div class="vote-label">НЕ ГОЛОСУВАЛИ</div>
+                    <div class="vote-count not-voted" id="votes-not-voted">${voteResults.notVoted}</div>
+
+                    <div class="vote-label">ВСЬОГО</div>
+                    <div class="vote-count total" id="votes-total">${voteResults.total}</div>
+                </div>
+                <div class="decision ${voteResults.for > voteResults.against ? '' : 'rejected'}" id="decision">
+                    ${voteResults.for > voteResults.against ? 'РІШЕННЯ ПРИЙНЯТО' : 'РІШЕННЯ НЕ ПРИЙНЯТО'}
+                </div>
+            </div>
+        `;
+        }
+
+        function initializeVotingMap() {
+            const mapEl = document.getElementById('voting-map');
+            if (!mapEl) return;
+
+            // Clear any existing content
+            mapEl.innerHTML = '';
+
+            // Create seat map grid (approximately resembling the Ukrainian parliament seating)
+            const rows = 16;
+            const cols = 16;
+
+            seatMap = [];
+
+            // Set grid template columns
+            mapEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+            // Create empty seat map
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const seatIndex = i * cols + j;
+                    const seat = document.createElement('div');
+                    seat.className = 'voter-seat';
+                    seat.id = `seat-${seatIndex}`;
+                    mapEl.appendChild(seat);
+                    seatMap.push({
+                        index: seatIndex,
+                        element: seat,
+                        status: 'empty'
+                    });
+                }
+            }
+        }
+
+        function updateVotingMap() {
+            if (currentScreen !== 'voting') return;
+
+            // Update timer and gradient
+            updateVotingTimerAndGradient();
+
+            // Update seats based on votes
+            let participantList = Object.entries(participants);
+
+            // Update seats with vote status
+            for (let i = 0; i < seatMap.length; i++) {
+                const seat = seatMap[i];
+
+                if (i < participantList.length) {
+                    const [id, participant] = participantList[i];
+                    // Get vote status from Firebase data
+                    const vote = participant.vote || null;
+
+                    if (vote === 'for') {
+                        seat.element.className = 'voter-seat voter-for';
+                        seat.status = 'for';
+                    } else if (vote === 'against') {
+                        seat.element.className = 'voter-seat voter-against';
+                        seat.status = 'against';
+                    } else if (vote === 'abstained') {
+                        seat.element.className = 'voter-seat voter-abstained';
+                        seat.status = 'abstained';
+                    } else {
+                        seat.element.className = 'voter-seat';
+                        seat.status = 'not-voted';
+                    }
+                } else {
+                    // Empty seats beyond participant count
+                    seat.element.className = 'voter-seat voter-empty';
+                    seat.status = 'empty';
+                }
+            }
+        }
+
+        function updateVotingTimerAndGradient() {
+            if (currentScreen !== 'voting') return;
+
+            const leftTimer = document.getElementById('left-timer');
+            const rightTimer = document.getElementById('right-timer');
+            const leftGradient = document.getElementById('left-gradient');
+            const rightGradient = document.getElementById('right-gradient');
+
+            if (!leftTimer || !rightTimer || !leftGradient || !rightGradient) return;
+
+            // Update timer value (showing seconds remaining)
+            leftTimer.textContent = String(remainingTime).padStart(2, '0');
+            rightTimer.textContent = String(remainingTime).padStart(2, '0');
+
+            // Calculate percentage of time elapsed
+            const totalTime = parseInt(inputVoteTimeEl.value);
+            const percentElapsed = ((totalTime - remainingTime) / totalTime) * 100;
+
+            // Update the gradient height to cover from top to bottom
+            leftGradient.style.height = `${percentElapsed}%`;
+            rightGradient.style.height = `${percentElapsed}%`;
+        }
+
         function startVoting() {
             const voteNumber = parseInt(inputVoteNumberEl.value);
-            const voteTitle = inputVoteTitleEl.value.trim() || 'ПІДСУМКИ ГОЛОСУВАННЯ';
             const voteTime = parseInt(inputVoteTimeEl.value);
-            
+
             if (voteTime < 10 || voteTime > 300) {
                 alert('Час голосування повинен бути від 10 до 300 секунд');
                 return;
@@ -387,109 +762,115 @@
 
             isVotingActive = true;
             remainingTime = voteTime;
-            
+
             // Update UI
-            voteNumberEl.textContent = voteNumber;
-            decisionEl.textContent = 'ГОЛОСУВАННЯ ТРИВАЄ';
-            decisionEl.className = 'decision';
             voteStatusEl.textContent = 'Голосування активне';
             startVoteButtonEl.disabled = true;
             endVoteButtonEl.disabled = false;
-            
+
             // Reset vote counts
             resetVoteCounts();
-            
-            // Start timer
-            startTimer();
-            
+
+            // Show law project screen first
+            showLawProjectScreen();
+
+            // Timer will be started after law project screen (in the showVotingMapScreen function)
+
             // Update Firebase
             database.ref(`sessions/${sessionCode}`).update({
                 active: true,
                 voteNumber: voteNumber,
-                voteTitle: voteTitle,
+                lawNumber: inputLawNumberEl.value,
+                voteTitle: inputVoteTitleEl.value.trim(),
                 voteTime: voteTime,
                 startTime: firebase.database.ServerValue.TIMESTAMP,
                 votes: null // Clear previous votes
             });
-            
+
             // Reset participant statuses
             for (const id in participants) {
                 database.ref(`sessions/${sessionCode}/participants/${id}`).update({
-                    status: 'не голосував'
+                    status: 'не голосував',
+                    vote: null
                 });
             }
         }
 
         function endVoting() {
             isVotingActive = false;
-            
+
             // Stop timer
             clearInterval(timerInterval);
-            
+
+            // Switch to results screen
+            showResultsScreen();
+
             // Update UI
             voteStatusEl.textContent = 'Голосування завершено';
             startVoteButtonEl.disabled = false;
             endVoteButtonEl.disabled = true;
-            
-            // Determine decision
-            const decision = voteResults.for > voteResults.against ? 'РІШЕННЯ ПРИЙНЯТО' : 'РІШЕННЯ НЕ ПРИЙНЯТО';
-            decisionEl.textContent = decision;
-            decisionEl.className = decision === 'РІШЕННЯ ПРИЙНЯТО' ? 'decision' : 'decision rejected';
-            
+
             // Update Firebase
             database.ref(`sessions/${sessionCode}`).update({
                 active: false,
-                decision: decision
+                decision: voteResults.for > voteResults.against ? 'РІШЕННЯ ПРИЙНЯТО' : 'РІШЕННЯ НЕ ПРИЙНЯТО'
             });
         }
 
         function resetVoting() {
             isVotingActive = false;
             clearInterval(timerInterval);
-            
+
             // Reset UI elements
-            voteNumberEl.textContent = inputVoteNumberEl.value;
-            decisionEl.textContent = 'ОЧІКУВАННЯ ГОЛОСУВАННЯ';
-            decisionEl.className = 'decision';
             voteStatusEl.textContent = 'Очікування початку голосування';
             timerEl.textContent = 'Час: 00:00';
             startVoteButtonEl.disabled = false;
             endVoteButtonEl.disabled = true;
-            
-            // Log the current session code to sessionHistory before deletion
+
+            // Switch to results screen with reset data
+            currentScreen = 'results';
+            resetVoteCounts();
+            showResultsScreen();
+
+            // Log the current session code before deletion
             database.ref(`sessionHistory/${sessionCode}`).set({
                 code: sessionCode,
                 endedAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(function() {
+            }).then(function () {
                 // Remove the current session from Firebase
                 database.ref(`sessions/${sessionCode}`).remove().then(() => {
                     // After removal, generate a new session code and create a new session
                     sessionCode = generateSessionCode();
                     sessionCodeEl.textContent = sessionCode;
                     createSession();
-                    
+
                     // Reinitialize listeners for the new session
                     setupFirebaseListeners();
                 });
             });
-            
-            // Reset vote counts
-            resetVoteCounts();
         }
 
         function startTimer() {
+            clearInterval(timerInterval); // Clear any existing timer
+
             timerInterval = setInterval(() => {
                 remainingTime--;
-                
+
                 const minutes = Math.floor(remainingTime / 60);
                 const seconds = remainingTime % 60;
                 timerEl.textContent = `Час: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                
+
+                // Update the voting map timer if we're on that screen
+                if (currentScreen === 'voting') {
+                    updateVotingTimerAndGradient();
+                    updateVotingMap();
+                }
+
                 // Update remaining time in Firebase
                 database.ref(`sessions/${sessionCode}`).update({
                     remainingTime: remainingTime
                 });
-                
+
                 if (remainingTime <= 0) {
                     endVoting();
                 }
@@ -502,7 +883,7 @@
                 against: 0,
                 abstained: 0,
                 notVoted: 0,
-                total: 0
+                total: Object.keys(participants).length
             };
             updateVoteDisplay();
         }
@@ -512,28 +893,48 @@
             voteResults.for = 0;
             voteResults.against = 0;
             voteResults.abstained = 0;
-            voteResults.notVoted = 0;
-            
+
+            // Update participant vote status
             for (const [id, vote] of Object.entries(votes)) {
+                if (participants[id]) {
+                    database.ref(`sessions/${sessionCode}/participants/${id}`).update({
+                        vote: vote
+                    });
+                }
+
                 if (vote === 'for') voteResults.for++;
                 else if (vote === 'against') voteResults.against++;
                 else if (vote === 'abstained') voteResults.abstained++;
             }
-            
+
             // Count not voted
             voteResults.notVoted = Object.keys(participants).length - (voteResults.for + voteResults.against + voteResults.abstained);
             voteResults.total = Object.keys(participants).length;
-            
+
             // Update display
             updateVoteDisplay();
         }
 
         function updateVoteDisplay() {
-            votesForEl.textContent = voteResults.for;
-            votesAgainstEl.textContent = voteResults.against;
-            votesAbstainedEl.textContent = voteResults.abstained;
-            votesNotVotedEl.textContent = voteResults.notVoted;
-            votesTotalEl.textContent = voteResults.total;
+            if (currentScreen === 'results') {
+                const votesForEl = document.getElementById('votes-for');
+                const votesAgainstEl = document.getElementById('votes-against');
+                const votesAbstainedEl = document.getElementById('votes-abstained');
+                const votesNotVotedEl = document.getElementById('votes-not-voted');
+                const votesTotalEl = document.getElementById('votes-total');
+                const decisionEl = document.getElementById('decision');
+
+                if (votesForEl) votesForEl.textContent = voteResults.for;
+                if (votesAgainstEl) votesAgainstEl.textContent = voteResults.against;
+                if (votesAbstainedEl) votesAbstainedEl.textContent = voteResults.abstained;
+                if (votesNotVotedEl) votesNotVotedEl.textContent = voteResults.notVoted;
+                if (votesTotalEl) votesTotalEl.textContent = voteResults.total;
+
+                if (decisionEl) {
+                    decisionEl.textContent = voteResults.for > voteResults.against ? 'РІШЕННЯ ПРИЙНЯТО' : 'РІШЕННЯ НЕ ПРИЙНЯТО';
+                    decisionEl.className = voteResults.for > voteResults.against ? 'decision' : 'decision rejected';
+                }
+            }
         }
 
         function updateVoteCounts() {
